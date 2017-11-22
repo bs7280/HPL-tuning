@@ -114,9 +114,8 @@ def run(xhpl_path, parse=False, verbose=False, early_termination=False, thresh=0
 #hpl_path = "spack/opt/spack/linux-clear_linux_os17920-x86_64/intel-18.0.0/hpl-2.2-2egogfet37vqtbwkd5dqq66hvm366rmi/bin/"
 hpl_path = "HPL/"
 
-#def createConfigFile(path,Ns_value,NB_value,LD=1,BC=3,PF=2,LF=2,verbose=False):
-#createConfigFile(hpl_path,64000,240)
-#walltime,flops = run(hpl_path,parse=True, early_termination=True)
+createConfigFile(hpl_path,64000,240)
+walltime,flops = run(hpl_path,parse=True, early_termination=True)
 
 
 def grid(params,verbose=False):
@@ -189,5 +188,5 @@ def second_grid():
         writer = csv.writer(f)
         writer.writerows(results)
 
-params = getParams((32000,98000,2000),(64,256,8))
-grid(params,verbose=True)
+#params = getParams((32000,98000,2000),(64,256,8))
+#grid(params,verbose=True)
