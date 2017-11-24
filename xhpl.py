@@ -7,7 +7,7 @@ import signal
 import subprocess
 import time
 import csv
-from gridParams import getParams
+from gridParams import getParams,getRandom
 import datetime
 
 def createConfigFile(path,Ns_value,NB_value,LD=1,BC=3,PF=2,LF=2,verbose=False):
@@ -114,13 +114,46 @@ def run(xhpl_path, parse=False, verbose=False, early_termination=False, thresh=0
 #hpl_path = "spack/opt/spack/linux-clear_linux_os17920-x86_64/intel-18.0.0/hpl-2.2-2egogfet37vqtbwkd5dqq66hvm366rmi/bin/"
 hpl_path = "HPL/"
 
-createConfigFile(hpl_path,64000,240)
-walltime,flops = run(hpl_path,parse=True, early_termination=True)
+#createConfigFile(hpl_path,64000,240)
+#walltime,flops = run(hpl_path,parse=True, early_termination=True)
+
+def randomSearch(iterations,verbose=False):
+    results = [["NB","NS","wt","gflops"]]
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    
+    for i in range(0,iterations):
+	NS,nb = getRandom((32000,98000),(64,256))
+
+	try:
+		#NS = (ns_exp)*1000
+		createConfigFile(hpl_path,NS,nb) #,1,1,2,1)
+		walltime,flops = run(hpl_path,parse=True,early_termination=False,verbose=verbose,thresh=10.0)
+
+		print "NB: " + str(nb) + " NS: " + str(NS) + " hpl_results: " + str(flops) + " GFLOPS (walltime " + str(walltime) + "s)"
+
+		results.append((nb,NS,walltime,flops))
+
+		# Sleep for 10 seconds to give OS a chance to clean
+		time.sleep(15)
+	except:
+		# record error
+		print "error"+str(NS)+", "+str(nb)
+		results.append((nb,NS,False,False))
+
+		# Sleep for 5 minutes to give the OS a change to get it's life together
+		time.sleep(60*5)
+
+	# Write to file
+
+	with open("hpl_experiment_random_"+str(ts),"w") as f:
+		writer = csv.writer(f)
+		writer.writerows(results)
 
 
 def grid(params,verbose=False):
     results = [["NB","NS","wt","gflops"]]
     ts = time.strftime("%Y%m%d-%H%M%S")
+
 
     for p in params:
 	NS=p[0]
@@ -190,3 +223,6 @@ def second_grid():
 
 #params = getParams((32000,98000,2000),(64,256,8))
 #grid(params,verbose=True)
+
+
+randomSearch(500,verbose=True)
