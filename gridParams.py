@@ -1,5 +1,7 @@
 import itertools
 import random
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 def getParams(NS,NB):
 	NS_ = range(NS[0],NS[1]+1,NS[2])
 	NB_ = range(NB[0],NB[1]+1,NB[2])
@@ -26,7 +28,7 @@ def getPredictor(lines):
 
     #return data 
 
-    print data[:10]
+    #print data[:10]
 
     X,y = zip(*data)
     X_train, X_test, y_train, y_test = train_test_split(

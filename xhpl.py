@@ -7,7 +7,7 @@ import signal
 import subprocess
 import time
 import csv
-from gridParams import getParams,getRandom
+from gridParams import getParams,getRandom,getCanidates
 import datetime
 
 def createConfigFile(path,Ns_value,NB_value,LD=1,BC=3,PF=2,LF=2,verbose=False):
@@ -191,7 +191,6 @@ def grid(params,verbose=False):
     print "Best: "
     print list(max(results[1:], key=lambda x: x[-1]))
 
-
 def second_grid():
     results = [["NB","NS","LD","BC","PF","LF","wt","gflops"]]
 
@@ -221,8 +220,47 @@ def second_grid():
         writer = csv.writer(f)
         writer.writerows(results)
 
+def ml_search(iterations,verbose=False):
+    results = [["NB","NS","wt","gflops"]]
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    fname="hpl_experiment_ml_"+str(ts)
+    
+    for i in range(0,iterations):
+	if iterations < 30:
+		NS,nb = getRandom((32000,98000),(64,256))
+	else:
+		with open('hpl_experiment_basic_20171122-014912') as f:
+		    lines = f.readlines()
+		nb,NS,_,_=getCanidates(lines,1000,10)[0]
+
+	#try:
+	if True:
+		#NS = (ns_exp)*1000
+		createConfigFile(hpl_path,NS,nb) #,1,1,2,1)
+		walltime,flops = run(hpl_path,parse=True,early_termination=False,verbose=verbose,thresh=10.0)
+
+		print "NB: " + str(nb) + " NS: " + str(NS) + " hpl_results: " + str(flops) + " GFLOPS (walltime " + str(walltime) + "s)"
+
+		results.append((nb,NS,walltime,flops))
+
+		# Sleep for 10 seconds to give OS a chance to clean
+		time.sleep(15)
+	#except:
+	if False:
+		# record error
+		print "error"+str(NS)+", "+str(nb)
+		results.append((nb,NS,False,False))
+
+		# Sleep for 5 minutes to give the OS a change to get it's life together
+		time.sleep(60*5)
+
+	# Write to file
+
+	with open(fname,"w") as f:
+		writer = csv.writer(f)
+		writer.writerows(results)
 #params = getParams((32000,98000,2000),(64,256,8))
 #grid(params,verbose=True)
 
-
-randomSearch(500,verbose=True)
+ml_search(500)
+#randomSearch(500,verbose=True)
